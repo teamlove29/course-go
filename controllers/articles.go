@@ -1,0 +1,193 @@
+package controllers
+
+import (
+	"course-go/models"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
+	"github.com/jinzhu/gorm"
+)
+
+type Articles struct {
+	DB *gorm.DB
+}
+
+type createArticleForm struct {
+	Title   string                `form:"title" binding : "required"`
+	Body    string                `form:"body" binding : "required"`
+	Excerpt string                `form:"excerpt" binding : "required"`
+	Image   *multipart.FileHeader `form:"image"binding : "required"`
+}
+
+type updateArticleForm struct {
+	Title   string                `form:"title"`
+	Body    string                `form:"body"`
+	Excerpt string                `form:"excerpt"`
+	Image   *multipart.FileHeader `form:"image"`
+}
+
+type articleResponse struct {
+	ID      uint   `json:"id"`
+	Title   string `json:"title"`
+	Excerpt string `json:"excerpt"`
+	Body    string `json:"body"`
+	Image   string `json:"image"`
+}
+
+type articlesPaging struct {
+	Items  []articleResponse `json:"items"`
+	Paging *pagingResult     `json:"paging"`
+}
+
+func (a *Articles) FindAll(c *gin.Context) {
+	var articles []models.Article
+
+	// a.DB.Find(&article)
+
+	// article => limit => 12, page => 1
+	// articles?limit => limit => 10, page => 1
+	// articles?page=10 => limit => 12, page => 10
+	// articles?page=2&linit=4 => limit => 4, page => 2
+	pagination := pagination{c: c, query: a.DB.Order("id desc"), recodes: &articles}
+	paging := pagination.paginate()
+
+	var serializedArticle []articleResponse
+	copier.Copy(&serializedArticle, &articles)
+
+	c.JSON(http.StatusOK, gin.H{"articles": articlesPaging{Items: serializedArticle, Paging: paging}})
+
+}
+
+func (a *Articles) FindOne(c *gin.Context) {
+	article, err := a.findArticleByID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	serializedArticle := articleResponse{}
+	copier.Copy(&serializedArticle, &article)
+	c.JSON(http.StatusOK, gin.H{"article": serializedArticle})
+}
+
+func (a *Articles) Create(c *gin.Context) {
+
+	var form createArticleForm
+
+	if err := c.ShouldBind(&form); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	var article models.Article
+
+	copier.Copy(&article, &form)
+
+	if err := a.DB.Create(&article).Error; err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	a.setArticleImage(c, &article)
+	serializedArticle := articleResponse{}
+	copier.Copy(&serializedArticle, &article)
+
+	c.JSON(http.StatusCreated, gin.H{"article": serializedArticle})
+
+}
+
+func (a *Articles) setArticleImage(c *gin.Context, article *models.Article) error {
+	file, err := c.FormFile("image")
+	if err != nil || file == nil {
+		return err
+	}
+
+	// เช็คว่ามีรูปอยู่ในไฟล์อยู่รึเปล่า
+	if article.Image != "" {
+		// http://127.0.0.1:5000/uploads/articles/<ID>/image.png
+		// 1. /uploads/articles/<ID>/image.png
+		article.Image = strings.Replace(article.Image, os.Getenv("HOST"), "", 1)
+		// 2. <WD>/uploads/articles/<ID>/image.png <WD> = working dir
+		pwd, _ := os.Getwd()
+		// 3. Remove <WD>/uploads/articles/<ID>/image.png
+		os.Remove(pwd + article.Image)
+	}
+
+	// create Path
+	// uploads/articles/123
+	path := "uploads/articles/" + strconv.Itoa(int(article.ID))
+	os.MkdirAll(path, 0755)
+
+	// Upload file
+	// uploads/articles/123/filename
+	filename := path + "/" + file.Filename
+	if err := c.SaveUploadedFile(file, filename); err != nil {
+		return err
+	}
+	// Attach file to article
+	article.Image = os.Getenv("HOST") + "/" + filename
+	// update to sql
+	a.DB.Save(article)
+
+	return nil
+}
+
+func (a *Articles) findArticleByID(c *gin.Context) (*models.Article, error) {
+	var article models.Article
+
+	id := c.Param("id")
+
+	if err := a.DB.First(&article, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &article, nil
+
+}
+
+func (a *Articles) Update(c *gin.Context) {
+	var form updateArticleForm
+
+	if err := c.ShouldBind(&form); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	article, err := a.findArticleByID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := a.DB.Model(&article).Update(&form).Error; err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	a.setArticleImage(c, article)
+
+	var serializedArticle articleResponse
+	copier.Copy(&serializedArticle, &article)
+	c.JSON(http.StatusOK, gin.H{"article": serializedArticle})
+
+}
+
+func (a *Articles) Delete(c *gin.Context) {
+
+	article, err := a.findArticleByID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	a.DB.Unscoped().Delete(&article)
+	// a.DB.Delete(&article)
+
+	c.Status(http.StatusNoContent)
+
+}
