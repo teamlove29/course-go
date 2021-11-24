@@ -1,6 +1,6 @@
 package models
 
-import "gorm.io/gorm"
+import "github.com/jinzhu/gorm"
 
 // type Article struct {
 // 	ID    uint   `json:"id"`
@@ -16,4 +16,7 @@ type Article struct {
 	Body       string `gorm:"not null"`
 	Image      string `gorm:"not null"`
 	CategoryID uint
+	Category   Category
+	UserID     uint
+	User       User
 }

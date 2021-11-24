@@ -14,7 +14,7 @@ func m1637321814AddCategoryIdToArticles() *gormigrate.Migration {
 			err := tx.AutoMigrate(&models.Article{}).Error
 
 			var articles []models.Article
-			tx.Find(&articles)
+			tx.Unscoped().Find(&articles)
 
 			for _, article := range articles {
 				article.CategoryID = 2

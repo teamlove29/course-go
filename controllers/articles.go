@@ -32,11 +32,20 @@ type updateArticleForm struct {
 }
 
 type articleResponse struct {
-	ID      uint   `json:"id"`
-	Title   string `json:"title"`
-	Excerpt string `json:"excerpt"`
-	Body    string `json:"body"`
-	Image   string `json:"image"`
+	ID         uint   `json:"id"`
+	Title      string `json:"title"`
+	Excerpt    string `json:"excerpt"`
+	Body       string `json:"body"`
+	Image      string `json:"image"`
+	CategoryID uint   `json: "categoryId"`
+	Category   struct {
+		ID   uint   `json: "id"`
+		Name string `json: "name"`
+	} `json:"category"`
+	User struct {
+		Name   string `json: "name"`
+		Avatar string `json: "avatar"`
+	} `json:"user"`
 }
 
 type articlesPaging struct {
@@ -53,7 +62,7 @@ func (a *Articles) FindAll(c *gin.Context) {
 	// articles?limit => limit => 10, page => 1
 	// articles?page=10 => limit => 12, page => 10
 	// articles?page=2&linit=4 => limit => 4, page => 2
-	pagination := pagination{c: c, query: a.DB.Order("id desc"), recodes: &articles}
+	pagination := pagination{c: c, query: a.DB.Preload("User").Preload("Category").Order("id desc"), recodes: &articles}
 	paging := pagination.paginate()
 
 	var serializedArticle []articleResponse
@@ -78,13 +87,16 @@ func (a *Articles) FindOne(c *gin.Context) {
 func (a *Articles) Create(c *gin.Context) {
 
 	var form createArticleForm
+	var article models.Article
+
+	user, _ := c.Get("sub")
+	copier.Copy(&article, &form)
+	article.User = *user.(*models.User)
 
 	if err := c.ShouldBind(&form); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
-
-	var article models.Article
 
 	copier.Copy(&article, &form)
 
@@ -142,7 +154,7 @@ func (a *Articles) findArticleByID(c *gin.Context) (*models.Article, error) {
 
 	id := c.Param("id")
 
-	if err := a.DB.First(&article, id).Error; err != nil {
+	if err := a.DB.Preload("User").Preload("Category").First(&article, id).Error; err != nil {
 		return nil, err
 	}
 

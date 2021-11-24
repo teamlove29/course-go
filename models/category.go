@@ -1,9 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import "github.com/jinzhu/gorm"
 
 type Category struct {
 	gorm.Model
-	Name string `gorm:"unique;not null"`
-	Desc string `gorm:"not null"`
+	Name     string `gorm:"unique;not null"`
+	Desc     string `gorm:"not null"`
+	Articles []Article
 }

@@ -5,11 +5,13 @@ go 1.17
 require gorm.io/driver/postgres v1.2.1
 
 require (
+	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 )
 
 require (
+	github.com/appleboy/gin-jwt/v2 v2.7.0
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/cosmtrek/air v1.27.3 // indirect
 	github.com/creack/pty v1.1.17 // indirect
