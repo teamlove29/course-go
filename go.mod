@@ -5,6 +5,7 @@ go 1.17
 require gorm.io/driver/postgres v1.2.1
 
 require (
+	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/lib/pq v1.10.2 // indirect
@@ -13,6 +14,7 @@ require (
 require (
 	github.com/appleboy/gin-jwt/v2 v2.7.0
 	github.com/bxcodec/faker/v3 v3.6.0
+	github.com/casbin/casbin v1.9.1
 	github.com/cosmtrek/air v1.27.3 // indirect
 	github.com/creack/pty v1.1.17 // indirect
 	github.com/fatih/color v1.13.0 // indirect

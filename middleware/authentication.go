@@ -5,6 +5,7 @@ import (
 	"course-go/models"
 	"log"
 	"os"
+	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -22,11 +23,14 @@ func Authenticate() *jwt.GinJWTMiddleware {
 
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		// secret key
-		Key: []byte(os.Getenv("SECRET_KEY")),
-
+		Key:           []byte(os.Getenv("SECRET_KEY")),
+		Timeout:       24 * time.Hour,
 		IdentityKey:   identityKey,
 		TokenLookup:   "header: Authorization",
 		TokenHeadName: "Bearer",
+
+		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
+		TimeFunc: time.Now,
 
 		IdentityHandler: func(c *gin.Context) interface{} {
 			var user models.User
@@ -66,7 +70,6 @@ func Authenticate() *jwt.GinJWTMiddleware {
 			if v, ok := data.(*models.User); ok {
 				claims := jwt.MapClaims{
 					identityKey: v.ID,
-					"test":      "test",
 				}
 
 				return claims

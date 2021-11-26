@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"course-go/models"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,7 @@ type Categories struct {
 }
 
 type categoryResponse struct {
+	ID       uint   `json:"id"`
 	Name     string `json:"name"`
 	Desc     string `json:"desc"`
 	Articles []struct {
@@ -33,8 +35,8 @@ type createCategoryForm struct {
 }
 
 type updateCategoryForm struct {
-	Name string `json:"name"`
-	Desc string `json:"desc"`
+	Name string `form:"name"`
+	Desc string `form:"desc"`
 }
 
 func (c *Categories) FindAll(ctx *gin.Context) {
@@ -79,12 +81,13 @@ func (c *Categories) Create(ctx *gin.Context) {
 
 func (c *Categories) Update(ctx *gin.Context) {
 	var form updateCategoryForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
 	category, err := c.findCategoryByID(ctx)
+
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -97,6 +100,9 @@ func (c *Categories) Update(ctx *gin.Context) {
 
 	var serializedCategory categoryResponse
 	copier.Copy(&serializedCategory, &category)
+	fmt.Println(serializedCategory.Name)
+	fmt.Println("Hello")
+
 	ctx.JSON(http.StatusOK, gin.H{"category": serializedCategory})
 }
 

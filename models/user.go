@@ -25,3 +25,11 @@ func (u *User) GenerateEncryptedPassword() string {
 	return string(hash)
 
 }
+
+func (u *User) Promote() {
+	u.Role = "Editor"
+}
+
+func (u *User) Demote() {
+	u.Role = "Member"
+}

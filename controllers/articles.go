@@ -25,10 +25,11 @@ type createArticleForm struct {
 }
 
 type updateArticleForm struct {
-	Title   string                `form:"title"`
-	Body    string                `form:"body"`
-	Excerpt string                `form:"excerpt"`
-	Image   *multipart.FileHeader `form:"image"`
+	Title      string                `form:"title"`
+	Body       string                `form:"body"`
+	Excerpt    string                `form:"excerpt"`
+	Image      *multipart.FileHeader `form:"image"`
+	CategoryID uint                  `form:"categoryId"`
 }
 
 type articleResponse struct {
@@ -37,7 +38,7 @@ type articleResponse struct {
 	Excerpt    string `json:"excerpt"`
 	Body       string `json:"body"`
 	Image      string `json:"image"`
-	CategoryID uint   `json: "categoryId"`
+	CategoryID uint   `json:"categoryId"`
 	Category   struct {
 		ID   uint   `json: "id"`
 		Name string `json: "name"`
@@ -48,28 +49,49 @@ type articleResponse struct {
 	} `json:"user"`
 }
 
+type createOrUpdateResponse struct {
+	ID         uint   `json:"id"`
+	Title      string `json:"title"`
+	Excerpt    string `json:"excerpt"`
+	Body       string `json:"body"`
+	Image      string `json:"image"`
+	CategoryID uint   `json:"categoryId"`
+	UserID     uint   `json:"userId"`
+}
+
 type articlesPaging struct {
 	Items  []articleResponse `json:"items"`
 	Paging *pagingResult     `json:"paging"`
 }
 
+// /api/v1/articles?categoryID=1&term=aut
 func (a *Articles) FindAll(c *gin.Context) {
-	var articles []models.Article
+	var articles []models.Article // empty slice
+
+	query := a.DB.Preload("User").Preload("Category").Order("id desc")
+
+	categoryID := c.Query("categoryId")
+	if categoryID != "" {
+		query = query.Where("category_id = ?", categoryID)
+	}
+
+	term := c.Query("term")
+	if term != "" {
+		query = query.Where("title ILIKE ?", "%"+term+"%")
+	}
 
 	// a.DB.Find(&article)
-
 	// article => limit => 12, page => 1
 	// articles?limit => limit => 10, page => 1
 	// articles?page=10 => limit => 12, page => 10
 	// articles?page=2&linit=4 => limit => 4, page => 2
-	pagination := pagination{c: c, query: a.DB.Preload("User").Preload("Category").Order("id desc"), recodes: &articles}
+	pagination := pagination{c: c, query: query, recodes: &articles}
 	paging := pagination.paginate()
 
-	var serializedArticle []articleResponse
-	copier.Copy(&serializedArticle, &articles)
+	serializedArticles := []articleResponse{} // nil slice
+	copier.Copy(&serializedArticles, &articles)
 
-	c.JSON(http.StatusOK, gin.H{"articles": articlesPaging{Items: serializedArticle, Paging: paging}})
-
+	c.JSON(http.StatusOK, gin.H{"articles": articlesPaging{Items: serializedArticles, Paging: paging}})
 }
 
 func (a *Articles) FindOne(c *gin.Context) {
@@ -106,7 +128,7 @@ func (a *Articles) Create(c *gin.Context) {
 	}
 
 	a.setArticleImage(c, &article)
-	serializedArticle := articleResponse{}
+	serializedArticle := createOrUpdateResponse{}
 	copier.Copy(&serializedArticle, &article)
 
 	c.JSON(http.StatusCreated, gin.H{"article": serializedArticle})
@@ -154,6 +176,9 @@ func (a *Articles) findArticleByID(c *gin.Context) (*models.Article, error) {
 
 	id := c.Param("id")
 
+	// SELECT * FROM articles;
+	// SELECT * FROM Users WHERE user_id = user_id;
+	// SELECT * FROM Categories WHERE category_id = category_id;
 	if err := a.DB.Preload("User").Preload("Category").First(&article, id).Error; err != nil {
 		return nil, err
 	}
@@ -183,7 +208,7 @@ func (a *Articles) Update(c *gin.Context) {
 
 	a.setArticleImage(c, article)
 
-	var serializedArticle articleResponse
+	var serializedArticle createOrUpdateResponse
 	copier.Copy(&serializedArticle, &article)
 	c.JSON(http.StatusOK, gin.H{"article": serializedArticle})
 

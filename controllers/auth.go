@@ -1,13 +1,9 @@
 package controllers
 
 import (
-	"course-go/config"
 	"course-go/models"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
@@ -95,43 +91,5 @@ func (a *Auth) UpdateProfile(ctx *gin.Context) {
 	var seriailzedUser userResponse
 	copier.Copy(&seriailzedUser, &user)
 	ctx.JSON(http.StatusOK, gin.H{"User": seriailzedUser})
-
-}
-
-func setUserImage(ctx *gin.Context, user *models.User) error {
-	file, err := ctx.FormFile("avatar")
-	if err != nil || file == nil {
-		return err
-	}
-
-	// เช็คว่ามีรูปอยู่ในไฟล์อยู่รึเปล่า
-	if user.Avatar != "" {
-		// http://127.0.0.1:5000/uploads/users/<ID>/image.png
-		// 1. /uploads/articles/<ID>/image.png
-		user.Avatar = strings.Replace(user.Avatar, os.Getenv("HOST"), "", 1)
-		// 2. <WD>/uploads/users/<ID>/image.png <WD> = working dir
-		pwd, _ := os.Getwd()
-		// 3. Remove <WD>/uploads/users/<ID>/image.png
-		os.Remove(pwd + user.Avatar)
-	}
-
-	// create Path
-	// uploads/users/123
-	path := "uploads/users/" + strconv.Itoa(int(user.ID))
-	os.MkdirAll(path, 0755)
-
-	// Upload file
-	// uploads/users/123/filename
-	filename := path + "/" + file.Filename
-	if err := ctx.SaveUploadedFile(file, filename); err != nil {
-		return err
-	}
-	// Attach file to article
-	user.Avatar = os.Getenv("HOST") + "/" + filename
-	// update to sql
-	db := config.GetDB()
-	db.Save(user)
-
-	return nil
 
 }
