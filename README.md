@@ -4,7 +4,7 @@
 # Endpoint types
 ### Non-secure endpoints
 All non-secure endpoints do not need authentication and use the method GET.
-* [GET /api/articles](#get-articles)
+* [GET /api/articles](#get-apiarticles)
 
 
 # API documentation
