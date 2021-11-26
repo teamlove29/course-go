@@ -16,7 +16,9 @@ Refer to the following for description of each endpoint
 Get endpoint status. When status is not `ok`, it is highly recommended to wait until the status changes back to `ok`.
 
 #### Query:
--
+* `limit` **int** No. of limit to query recent trades
+* `categoryId` **int** id. of category
+* `term` **string** text to search
 
 #### Response:
 ```javascript
