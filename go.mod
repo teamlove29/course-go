@@ -18,8 +18,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
-	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
 
@@ -34,5 +33,6 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.1.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
+	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 	gopkg.in/gormigrate.v1 v1.6.0
 )
