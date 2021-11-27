@@ -41,7 +41,7 @@ func main() {
 
 	// heroku ไม่อ่าน .env จึงต้อง setting
 	// heroku config:set SECRET_KEY=$(uuidgen)
-	// heroku config:set HOST=ตามที่ได้
+	// heroku config:set HOST=https://lit-tundra-22431.herokuapp.com
 	// heroku config:set GIN_MODE=release APP_ENV=production (ใช้แค่ ginmode ก็ได้)
 	// heroku open ทำการ test ได้เลย
 
