@@ -19,7 +19,7 @@ func InitDB() {
 
 	// db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_CONNECTION")), &gorm.Config{})
 	var err error
-	db, err = gorm.Open("postgres", os.Getenv("DATABASE_CONNECTION"))
+	db, err = gorm.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic("failed to connect database")
 	}
