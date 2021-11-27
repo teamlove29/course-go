@@ -19,6 +19,7 @@ require (
 	github.com/creack/pty v1.1.17 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.4 // indirect
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
