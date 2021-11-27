@@ -24,6 +24,29 @@ func main() {
 	// ./course-go
 	// ถ้ารันบน server เอาไฟล์ binary ไปรันก็พอ
 
+	// คำสั่ง run heroku
+	// install heroku
+	// heroku --version
+	// heroku login
+	// heroku create = จะได้้ url
+	// git push heroku main (อัพ git ขึ้นไปที่ heroku)
+	// create file: Procfile
+	// git push heroku main
+
+	// add tool to heruko
+	// heroku addons:create heroku-postgresql:hobby-dev
+	// heroku config
+	// change .env DATABASE_CONNECTION to DATABASE_URL
+	// git push heroku main
+
+	// heroku ไม่อ่าน .env จึงต้อง setting
+	// heroku config:set SECRET_KEY=$(uuidgen)
+	// heroku config:set HOST=ตามที่ได้
+	// heroku config:set GIN_MODE=release APP_ENV=production (ใช้แค่ ginmode ก็ได้)
+	// heroku open ทำการ test ได้เลย
+
+	// fix error git pull --rebase
+
 	if os.Getenv("APP_ENV") != "production" {
 		err := godotenv.Load()
 		if err != nil {
