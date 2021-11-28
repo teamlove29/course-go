@@ -38,7 +38,7 @@ Get endpoint status. When status is not `ok`, it is highly recommended to wait u
                 },
                 "user": {
                     "Name": "userName#52",
-                    "Avatar": user"Avatar#52"
+                    "Avatar": "Avatar#52"
                 }
             }
        ],
