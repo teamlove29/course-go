@@ -4,6 +4,7 @@ import (
 	"course-go/config"
 	"course-go/migrations"
 	"course-go/routes"
+	"course-go/seed"
 	"log"
 	"os"
 
@@ -64,7 +65,7 @@ func main() {
 	corsConfig.AddAllowHeaders("Authorization")
 
 	// create faker database
-	// seed.Load()
+	seed.Load()
 
 	r := gin.Default()
 	r.Static("/uploads", "./uploads")
