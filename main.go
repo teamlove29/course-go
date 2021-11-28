@@ -54,11 +54,6 @@ func main() {
 		}
 	}
 
-	if err := godotenv.Load(); err != nil {
-		// if err print and stop.
-		log.Fatal("Error loading .env file")
-	}
-
 	config.InitDB()
 	defer config.CloseDB()
 	migrations.Migrate()
